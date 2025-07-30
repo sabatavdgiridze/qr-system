@@ -90,3 +90,6 @@ erDiagram
     classes ||--o{ attendance_records : "tracked_in"
     
     attendance_sessions ||--o{ heartbeats : "generates"
+
+
+![typical_flow](https://github.com/user-attachments/assets/01bedaee-c92a-42ac-af71-0cf0bf37192b)

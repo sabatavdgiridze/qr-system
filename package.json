@@ -16,5 +16,8 @@
     "jsonwebtoken": "^9.0.2",
     "node-cron": "^4.2.1",
     "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "jest": "^30.0.5"
   }
 }

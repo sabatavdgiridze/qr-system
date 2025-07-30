@@ -360,7 +360,6 @@ const getActiveSession = async (userId) => {
     return session;
 };
 
-// ==================== HELPER FUNCTIONS ====================
 
 
 const calculateExpectedIntervals = (startTime, endTime) => {

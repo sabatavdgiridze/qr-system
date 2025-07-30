@@ -4,6 +4,52 @@ We have to solve the following issues:
   - qr code is displayed by a front-end + backend application inside the class which is listening to changes coming from the server. We have a cron job on server side, which periodically sends new qr codes for each class to corresponding using provided hooks. here class diplay application know that the requests are coming from the backend because they are signed to its secret key. This makes qr code change every 10 minutes for example, which makes it hard to take pictures of qr code one and  then cheat and still get attendance credits even though they are not in class (Ok, this does not make it impossible for one student to actually attend the class and send it to friends, if they can manage that in 10 minutes. The next solution solves that problem)
   - the android application should periodically send heart-beats to the back-end to prove that the student is inside the class. How that works: we assume that the duration of class in 5 divisible in minutes. With that, we decompose the duration into those 5 - minute segments and we keep attendance for each separately: [t_1 = start, t_2) [t_2, t_3) ... [t_{n-1}, t_n = end) and we save what percentage of that segments was attended. For example, if the class spans 30 minutes. we have 6 segments and if the student was present for 4 out of 6 of them, we give her attendance, otherwise no. This ratio should be changable in database configuration and later from admin page. The android application should send this heart-beats every 1 minute for example, to be sure that we take into account network issues or some other technical problems not caused by the student.
 
+For testing purposes, those are postman calls (and corresponding database state in the end):
+
+```bash
+curl --location 'http://localhost:3000/api/auth/login' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+  "email": "student@gatech.edu",
+  "password": "student123"
+}'
+
+curl --location 'http://localhost:3000/api/classes/scan' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJzdHVkZW50XzEiLCJlbWFpbCI6InN0dWRlbnRAZ2F0ZWNoLmVkdSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzUzODcwOTAzLCJleHAiOjE3NTM5MTQxMDN9.7CxX25iDydu5k_s_MqUWmVx9e6-3cbhMzzD-ewGU114' \
+--header 'Content-Type: application/json' \
+--data '{
+  "qrCode": "ROOM101_2923118_36b0ce8defb3520b46b75e1d302c1c21dad0d2d8d2fa91de3fac5a2814993b78",
+  "gpsCoords": {
+    "lat": 33.7756,
+    "lng": -84.3963
+  }
+}'
+
+curl --location 'http://localhost:3000/api/attendance/start' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJzdHVkZW50XzEiLCJlbWFpbCI6InN0dWRlbnRAZ2F0ZWNoLmVkdSIsInJvbGUiOiJTVFVERU5UIiwiaWF0IjoxNzUzODcwOTAzLCJleHAiOjE3NTM5MTQxMDN9.7CxX25iDydu5k_s_MqUWmVx9e6-3cbhMzzD-ewGU114' \
+--header 'Content-Type: application/json' \
+--data '{
+  "sessionToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJzdHVkZW50XzEiLCJyb29tSWQiOiJST09NMTAxIiwiZ3BzQ29vcmRzIjp7ImxhdCI6MzMuNzc1NiwibG5nIjotODQuMzk2M30sIm5vbmNlIjoiZWZkYzA1MjJkZmQ1MTcyMDczYzdlYzJiYWJhYmU1NjMiLCJpYXQiOjE3NTM4NzEwMjcsImV4cCI6MTc1Mzg3MTMyN30.qDstFIQU1Ss6U3euY4WovvzNk3mmrpIbrZ52Q1bCfiU",
+  "classId": "BIO101_001"
+}'
+```
+
+
+```sql
+
+SELECT * FROM attendance_sessions WHERE student_id = 'student_1' AND status = 'ACTIVE';
+
+SELECT 
+  h.*,
+  datetime(h.timestamp) as readable_time
+FROM heartbeats h 
+WHERE session_id = 'cf66b580ca61347d85a9edab9d3201d4'
+ORDER BY timestamp;
+
+```
+
+
+
 
 ## Database Schema
 

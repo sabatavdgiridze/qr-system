@@ -7,7 +7,6 @@ const { getDB } = require('../database/init');
 
 const router = express.Router();
 
-// Scan QR code and get available classes
 router.post('/scan',
     authenticateToken,
     validateSchema(schemas.scanQR),

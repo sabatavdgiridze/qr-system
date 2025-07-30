@@ -4,13 +4,7 @@ const { getDB } = require('../database/init');
 const { validateSessionToken } = require('./qrService');
 const { validateLocation } = require('./classService');
 
-/**
- * Start attendance session for a class
- * @param {string} userId - Student's user ID
- * @param {string} sessionToken - JWT token from QR scan
- * @param {string} classId - ID of the class to attend
- * @returns {Promise<object>} Session details
- */
+
 const startAttendanceSession = async (userId, sessionToken, classId) => {
     // Validate session token
     const tokenValidation = validateSessionToken(sessionToken);
@@ -77,7 +71,7 @@ const startAttendanceSession = async (userId, sessionToken, classId) => {
 
     // Validate current time is within attendance window
     const now = new Date();
-    const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
+    const currentTime = now.toTimeString().slice(0, 5);
     const startTime = classInfo.start_time;
     const endTime = classInfo.end_time;
 
@@ -118,17 +112,10 @@ const startAttendanceSession = async (userId, sessionToken, classId) => {
     };
 };
 
-/**
- * Record a heartbeat for an active attendance session
- * @param {string} userId - Student's user ID
- * @param {string} sessionId - Active session ID
- * @param {object} gpsCoords - Current GPS coordinates {lat, lng}
- * @returns {Promise<object>} Heartbeat status
- */
+
 const recordHeartbeat = async (userId, sessionId, gpsCoords) => {
     const db = getDB();
 
-    // Verify session belongs to user and is active
     const session = await new Promise((resolve, reject) => {
         db.get(
             `SELECT s.*, c.start_time, c.end_time 
@@ -185,12 +172,7 @@ const recordHeartbeat = async (userId, sessionId, gpsCoords) => {
     };
 };
 
-/**
- * End an attendance session
- * @param {string} userId - Student's user ID
- * @param {string} sessionId - Session ID to end
- * @returns {Promise<object>} Final attendance record
- */
+
 const endAttendanceSession = async (userId, sessionId) => {
     const db = getDB();
 
@@ -232,11 +214,7 @@ const endAttendanceSession = async (userId, sessionId) => {
     };
 };
 
-/**
- * Calculate attendance for a session and save to records
- * @param {string} sessionId - Session ID
- * @returns {Promise<object>} Attendance record
- */
+
 const calculateAndSaveAttendance = async (sessionId) => {
     const db = getDB();
 
@@ -310,13 +288,7 @@ const calculateAndSaveAttendance = async (sessionId) => {
     };
 };
 
-/**
- * Get attendance record for a specific student, class, and date
- * @param {string} userId - Student's user ID
- * @param {string} classId - Class ID
- * @param {string} date - Date in YYYY-MM-DD format
- * @returns {Promise<object|null>} Attendance record or null if not found
- */
+
 const getAttendanceRecord = async (userId, classId, date) => {
     const db = getDB();
 
@@ -338,11 +310,7 @@ const getAttendanceRecord = async (userId, classId, date) => {
     return record;
 };
 
-/**
- * Get all attendance records for a student
- * @param {string} userId - Student's user ID
- * @returns {Promise<Array>} Array of attendance records
- */
+
 const getStudentAttendanceHistory = async (userId) => {
     const db = getDB();
 
@@ -364,11 +332,7 @@ const getStudentAttendanceHistory = async (userId) => {
     return records;
 };
 
-/**
- * Get current active session for a student
- * @param {string} userId - Student's user ID
- * @returns {Promise<object|null>} Active session or null
- */
+
 const getActiveSession = async (userId) => {
     const db = getDB();
 
@@ -398,12 +362,7 @@ const getActiveSession = async (userId) => {
 
 // ==================== HELPER FUNCTIONS ====================
 
-/**
- * Calculate expected 5-minute intervals for a class
- * @param {string} startTime - Class start time (HH:MM)
- * @param {string} endTime - Class end time (HH:MM)
- * @returns {number} Number of 5-minute intervals
- */
+
 const calculateExpectedIntervals = (startTime, endTime) => {
     const [startHour, startMin] = startTime.split(':').map(Number);
     const [endHour, endMin] = endTime.split(':').map(Number);
@@ -415,12 +374,7 @@ const calculateExpectedIntervals = (startTime, endTime) => {
     return Math.ceil(durationMinutes / 5); // 5-minute intervals
 };
 
-/**
- * Calculate which interval number the current time belongs to
- * @param {string} classStartTime - Class start time (HH:MM)
- * @param {string} sessionStartTime - When student started session (timestamp)
- * @returns {number} Interval number (1-based)
- */
+
 const calculateCurrentInterval = (classStartTime, sessionStartTime) => {
     const now = new Date();
     const sessionStart = new Date(sessionStartTime);
@@ -434,13 +388,7 @@ const calculateCurrentInterval = (classStartTime, sessionStartTime) => {
     return Math.max(1, intervalNumber);
 };
 
-/**
- * Check if current time is within attendance window
- * @param {string} currentTime - Current time (HH:MM)
- * @param {string} startTime - Class start time (HH:MM)
- * @param {string} endTime - Class end time (HH:MM)
- * @returns {boolean} True if within window
- */
+
 const isWithinAttendanceWindow = (currentTime, startTime, endTime) => {
     const [currentHour, currentMin] = currentTime.split(':').map(Number);
     const [startHour, startMin] = startTime.split(':').map(Number);
@@ -457,11 +405,7 @@ const isWithinAttendanceWindow = (currentTime, startTime, endTime) => {
     return currentMinutes >= windowStart && currentMinutes <= windowEnd;
 };
 
-/**
- * Get heartbeat statistics for a session
- * @param {string} sessionId - Session ID
- * @returns {Promise<object>} Heartbeat stats
- */
+
 const getHeartbeatStats = async (sessionId) => {
     const db = getDB();
 
@@ -488,15 +432,11 @@ const getHeartbeatStats = async (sessionId) => {
     };
 };
 
-/**
- * Auto-end abandoned sessions (sessions that haven't received heartbeats in 10+ minutes)
- * This should be called periodically by a cron job
- */
+
 const cleanupAbandonedSessions = async () => {
     const db = getDB();
     const tenMinutesAgo = new Date(Date.now() - 10 * 60 * 1000);
 
-    // Find sessions with no recent heartbeats
     const abandonedSessions = await new Promise((resolve, reject) => {
         db.all(
             `SELECT DISTINCT s.session_id 
@@ -515,7 +455,6 @@ const cleanupAbandonedSessions = async () => {
         );
     });
 
-    // Mark as abandoned and calculate attendance
     for (const session of abandonedSessions) {
         await new Promise((resolve, reject) => {
             db.run(
@@ -528,7 +467,6 @@ const cleanupAbandonedSessions = async () => {
             );
         });
 
-        // Calculate final attendance for abandoned session
         await calculateAndSaveAttendance(session.session_id);
     }
 

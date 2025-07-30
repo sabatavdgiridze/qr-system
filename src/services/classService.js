@@ -40,8 +40,8 @@ const getCurrentClasses = async (roomId, studentId) => {
     try {
         const db = getDB();
         const now = new Date();
-        const currentDay = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
-        const currentTime = now.toTimeString().slice(0, 5); // HH:MM format
+        const currentDay = now.getDay();
+        const currentTime = now.toTimeString().slice(0, 5);
 
         const classes = await new Promise((resolve, reject) => {
             db.all(`
@@ -75,7 +75,6 @@ const getCurrentClasses = async (roomId, studentId) => {
     }
 };
 
-// Check if class is starting soon
 const isClassStartingSoon = (classStartTime, currentTime) => {
     const [startHour, startMin] = classStartTime.split(':').map(Number);
     const [currentHour, currentMin] = currentTime.split(':').map(Number);
@@ -83,7 +82,6 @@ const isClassStartingSoon = (classStartTime, currentTime) => {
     const startMinutes = startHour * 60 + startMin;
     const currentMinutes = currentHour * 60 + currentMin;
 
-    // Class is starting soon if current time is within 15 minutes before start
     return currentMinutes < startMinutes && (startMinutes - currentMinutes) <= 15;
 };
 

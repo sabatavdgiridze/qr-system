@@ -4,7 +4,7 @@ const cron = require('node-cron');
 const { JWT_SECRET } = require('../middleware/auth');
 const { getDB } = require('../database/init');
 
-const QR_SECRET = process.env.QR_SECRET || 'your-qr-secret-key';
+const QR_SECRET = process.env.QR_SECRET || 'qr-secret';
 
 // Generate QR code content for a room
 const generateQRCode = (roomId) => {
@@ -98,10 +98,28 @@ const updateQRCodes = async () => {
                     }
                 );
             });
+
+            // update the qr, by calling the hook for the corresponding room
         }
 
         console.log(`Updated QR codes for ${classrooms.length} classrooms`);
     } catch (error) {
         console.error('Failed to update QR codes:', error);
     }
+};
+
+const startQRRotationJob = () => {
+    cron.schedule('*/10 * * * *', updateQRCodes);
+
+    updateQRCodes();
+
+    console.log('QR code rotation job started');
+};
+
+module.exports = {
+    generateQRCode,
+    validateQRCode,
+    generateSessionToken,
+    validateSessionToken,
+    startQRRotationJob
 };

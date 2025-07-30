@@ -10,7 +10,6 @@ const {
 
 const router = express.Router();
 
-// Start attendance for a class
 router.post('/start',
     authenticateToken,
     validateSchema(schemas.startAttendance),
@@ -29,7 +28,6 @@ router.post('/start',
     }
 );
 
-// Send heartbeat
 router.post('/heartbeat',
     authenticateToken,
     validateSchema(schemas.heartbeat),
@@ -48,7 +46,6 @@ router.post('/heartbeat',
     }
 );
 
-// End attendance session
 router.post('/end', authenticateToken, async (req, res) => {
     try {
         const { sessionId } = req.body;
@@ -63,7 +60,6 @@ router.post('/end', authenticateToken, async (req, res) => {
     }
 });
 
-// Get attendance record for a class
 router.get('/record/:classId/:date', authenticateToken, async (req, res) => {
     try {
         const { classId, date } = req.params;

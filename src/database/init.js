@@ -125,12 +125,31 @@ const populateData = async () => {
     const studentHash = await bcrypt.hash('student123', 10);
     const instructorHash = await bcrypt.hash('instructor123', 10);
 
+    const now = new Date();
+    const currentDay = now.getDay();
+
+    const class1Start = new Date(now.getTime() - 10 * 60 * 1000);
+    const class1End = new Date(class1Start.getTime() + 90 * 60 * 1000);
+
+    const class2Start = new Date(now.getTime() + 10 * 60 * 1000);
+    const class2End = new Date(class2Start.getTime() + 90 * 60 * 1000);
+
+    const formatTime = (date) => {
+        return date.toTimeString().slice(0, 5);
+    };
+
+    const class1StartTime = formatTime(class1Start);
+    const class1EndTime = formatTime(class1End);
+    const class2StartTime = formatTime(class2Start);
+    const class2EndTime = formatTime(class2End);
+
+
     const sampleData = [
         // Classrooms
         `INSERT OR IGNORE INTO classrooms VALUES 
-      ('ROOM_101', 33.7756, -84.3963, NULL, CURRENT_TIMESTAMP),
-      ('ROOM_102', 33.7758, -84.3965, NULL, CURRENT_TIMESTAMP),
-      ('ROOM_201', 33.7760, -84.3967, NULL, CURRENT_TIMESTAMP)`,
+      ('ROOM101', 33.7756, -84.3963, NULL, CURRENT_TIMESTAMP),
+      ('ROOM102', 33.7758, -84.3965, NULL, CURRENT_TIMESTAMP),
+      ('ROOM201', 33.7760, -84.3967, NULL, CURRENT_TIMESTAMP)`,
 
         // Sample instructor (password: instructor123)
         `INSERT OR IGNORE INTO users VALUES 
@@ -142,8 +161,9 @@ const populateData = async () => {
 
         // Sample classes
         `INSERT OR IGNORE INTO classes VALUES 
-      ('BIO101_001', 'Introduction to Biology - Section 001', 'ROOM_101', 1, '10:00', '11:30', 'instructor_1'),
-      ('CHEM201_003', 'Organic Chemistry - Section 003', 'ROOM_102', 1, '14:00', '15:30', 'instructor_1')`,
+    ('BIO101_001', 'Introduction to Biology - Section 001', 'ROOM101', ${currentDay}, '${class1StartTime}', '${class1EndTime}', 'instructor_1'),
+      ('CHEM201_003', 'Organic Chemistry - Section 003', 'ROOM101', ${currentDay}, '${class2StartTime}', '${class2EndTime}', 'instructor_1')`,
+
 
         // Sample enrollment
         `INSERT OR IGNORE INTO class_enrollments (student_id, class_id) VALUES 

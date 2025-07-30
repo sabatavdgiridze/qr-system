@@ -21,6 +21,7 @@ const validateQRCode = (qrCode) => {
     try {
         const parts = qrCode.split('_');
         if (parts.length !== 3) {
+            console.log(qrCode);
             return { valid: false, reason: 'invalid_format' };
         }
 
